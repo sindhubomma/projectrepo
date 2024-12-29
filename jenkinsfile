@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your-repo.git'
+            }
+        }
+        stage('Build and Test') {
+            steps {
+                sh 'mvn clean install' // Replace with your build command
+            }
+        }
+        stage('Run Ansible Playbook') {
+            steps {
+                sshagent(['ansible-ssh-credentials']) {
+                    sh 'ansible-playbook -i inventory playbook.yml'
+                }
+            }
+        }
+        stage('Pull Docker Image') {
+            steps {
+                sshagent(['web-server-ssh-credentials']) {
+                    sh 'ssh user@web-server "docker pull your-docker-image:latest"'
+                }
+            }
+        }
+        stage('Deploy Application') {
+            steps {
+                sshagent(['web-server-ssh-credentials']) {
+                    sh 'ssh user@web-server "docker run -d --name app -p 80:80 your-docker-image:latest"'
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Deployment Successful!'
+        }
+        failure {
+            echo 'Deployment Failed!'
+        }
+    }
+}
