@@ -22,14 +22,14 @@ pipeline {
         stage('Pull Docker Image') {
             steps {
                 sshagent(['eff72ade-363e-448d-86a3-f54ddb6c185d']) {
-                    sh 'ssh user@web-server "docker pull your-docker-image:latest"'
+                    sh 'ssh master@Webserver "docker pull your-docker-image:latest"'
                 }
             }
         }
         stage('Deploy Application') {
             steps {
-                sshagent(['web-server-ssh-credentials']) {
-                    sh 'ssh user@web-server "docker run -d --name app your-docker-image:latest"'
+                sshagent(['eff72ade-363e-448d-86a3-f54ddb6c185d']) {
+                    sh 'ssh master@Webserver "docker run -d --name app your-docker-image:latest"'
                 }
             }
         }
