@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // GitHub repository URL
-        REPO_URL = 'https://github.com/rajput-ashish/devops-project.git'
+        REPO_URL = 'https://github.com/sindhubomma/projectrepo.git'
     }
     
     stages {
