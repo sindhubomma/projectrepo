@@ -8,19 +8,20 @@ pipeline {
         }
         stage('Build and Test') {
             steps {
-                sh 'npm install' // Replace with your build command
+                // Example for Maven build
+                sh 'mvn clean install'
             }
         }
         stage('Run Ansible Playbook') {
             steps {
-                sshagent(['ansible-ssh-credentials']) {
+                sshagent(['01426472-5bb9-4462-840f-681c7355ef5b']) {
                     sh 'ansible-playbook -i inventory playbook.yml'
                 }
             }
         }
         stage('Pull Docker Image') {
             steps {
-                sshagent(['web-server-ssh-credentials']) {
+                sshagent(['eff72ade-363e-448d-86a3-f54ddb6c185d']) {
                     sh 'ssh user@web-server "docker pull your-docker-image:latest"'
                 }
             }
@@ -28,7 +29,7 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 sshagent(['web-server-ssh-credentials']) {
-                    sh 'ssh user@web-server "docker run -d --name app -p 80:80 your-docker-image:latest"'
+                    sh 'ssh user@web-server "docker run -d --name app your-docker-image:latest"'
                 }
             }
         }
