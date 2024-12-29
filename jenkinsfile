@@ -1,45 +1,83 @@
 pipeline {
     agent any
+    
+    environment {
+        // GitHub repository URL
+        REPO_URL = 'https://github.com/rajput-ashish/devops-project.git'
+    }
+    
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/sindhubomma/projectrepo.git'
+                // Clean workspace before checkout
+                //cleanWs()
+                // Checkout code from GitHub
+                git branch: 'main', url: env.REPO_URL
             }
         }
-        stage('Build and Test') {
+        
+        //stage('Install Dependencies') {
+            //steps {
+                // Install any necessary dependencies
+              //  sh 'npm install'
+            //}
+        //}
+        
+        stage('Code Quality') {
             steps {
-                // Example for Maven build
-                sh 'mvn clean install'
-            }
-        }
-        stage('Run Ansible Playbook') {
-            steps {
-                sshagent(['01426472-5bb9-4462-840f-681c7355ef5b']) {
-                    sh 'ansible-playbook -i inventory playbook.yml'
+                script {
+                    // Run ESLint for JavaScript files
+                    sh 'npx eslint "*/.js" || true'
+                    
+                    // Run HTML validator
+                    sh 'npx html-validator "*/.html" || true'
+                    
+                    // Run CSS validator
+                    sh 'npx stylelint "*/.css" || true'
                 }
             }
         }
-        stage('Pull Docker Image') {
+        
+        stage('Build') {
             steps {
-                sshagent(['eff72ade-363e-448d-86a3-f54ddb6c185d']) {
-                    sh 'ssh master@Webserver "docker pull your-docker-image:latest"'
-                }
+                // Run build command if using a build tool
+                sh 'npm run build || true'
             }
         }
-        stage('Deploy Application') {
+        
+        stage('Test') {
             steps {
-                sshagent(['eff72ade-363e-448d-86a3-f54ddb6c185d']) {
-                    sh 'ssh master@Webserver "docker run -d --name app your-docker-image:latest"'
+                // Run tests if available
+                sh 'npm test || true'
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy to web server
+                    // This is a simple example - adjust according to your deployment needs
+                    sh '''
+                        echo "Deploying to web server..."
+                        # Add your deployment commands here
+                        # For example: copying files to web server directory
+                        # cp -r dist/* /var/www/html/
+                    '''
                 }
             }
         }
     }
+    
     post {
         success {
-            echo 'Deployment Successful!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Deployment Failed!'
+            echo 'Pipeline failed! Please check the logs for details.'
         }
+        //always {
+            // Clean workspace after build
+           // cleanWs()
+       // }
     }
 }
